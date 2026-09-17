@@ -1,0 +1,55 @@
+# Unity-generated state
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+/[Bb]uild/
+/[Bb]uilds/
+/.utmp/
+/Assets/_Recovery/
+/Assets/_Recovery.meta
+
+# IDE / OS
+/.vs/
+/.idea/
+/.vscode/
+*.csproj
+*.sln
+*.slnx
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.suo
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Generated packages and native exports
+*.apk
+*.aab
+*.ipa
+*.app/
+*.dSYM/
+/iOSBuild/
+/XcodeBuild/
+/ExportedObj/
+/Assets/Plugins/Android/*.backup
+/Assets/Plugins/Android/*.backup.meta
+
+# Local signing and credentials must never be committed
+.env
+.env.*
+*.keystore
+*.jks
+*.p12
+*.pfx
+*.mobileprovision
+*.cer
+*.key
+/Assets/StreamingAssets/google-services-desktop.json
