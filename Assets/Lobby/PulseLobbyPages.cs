@@ -34,33 +34,15 @@ public partial class PulseLobby {
   Label(root,page.ToUpperInvariant(),23,270,142,372,40,White,true);var close=Button(root,"Close page",LobbyAction.Close,41,41,488,141);Icon(close.transform,LobbyIcon.Close,22,0,0);
   switch(page){
    case "Профиль":
-    PageText(root,"Твой проводник в мире PULSESHIFT",254,14,new Color(.55f,.75f,1));
-    Icon(At(root,"Avatar",96,96,270,350),LobbyIcon.Hero,94,0,0,SkinColors[Profile.selectedSkin]);
-    PageText(root,"Имя игрока",430);var input=At(root,"Player name input",358,51,270,484);var inputImage=input.gameObject.AddComponent<Image>();inputImage.color=new Color(.04f,.09f,.2f);nameInput=input.gameObject.AddComponent<InputField>();nameInput.targetGraphic=inputImage;var entry=Text(input,"Name",Profile.playerName,21,328,45,0,0,White);entry.alignment=TextAnchor.MiddleLeft;nameInput.textComponent=entry;nameInput.characterLimit=16;nameInput.contentType=InputField.ContentType.Standard;nameInput.lineType=InputField.LineType.SingleLine;nameInput.text=Profile.playerName;
-    PageText(root,"Прогресс сохраняется на этом устройстве.\nИмя можно изменить в любой момент.",568,14);
-    PageButton(root,"СОХРАНИТЬ ИМЯ",LobbyAction.SaveName,652);break;
+    BuildProfilePage(root);break;
    case "Настройки":
-    Label(root,"ЗВУК",17,92,205,115,30,Cyan,true);
-    AddSlider(root,"Музыка",258,Profile.music,true);AddSlider(root,"Эффекты",346,Profile.sound,false);
-    Label(root,"ИГРА",17,92,410,115,30,Cyan,true);
-    SettingToggle(root,"Вибрация",LobbyAction.ToggleVibration,463,Profile.vibration);
-    SettingToggle(root,MobilePerformance.Lite?"АВТО · 30 FPS":"60 FPS",LobbyAction.ToggleFps,520,Profile.fps60&&!MobilePerformance.Lite);
-    var quality=PageButton(root,"КАЧЕСТВО ГРАФИКИ     "+QualityCaption,LobbyAction.CycleQuality,587);quality.GetComponent<LobbyPlate>().accent=Cyan;
-    PageButton(root,"УМЕНЬШИТЬ ДВИЖЕНИЕ: "+(Profile.reducedMotion?"ВКЛ":"ВЫКЛ"),LobbyAction.ToggleMotion,648);
-    Label(root,"АККАУНТ",17,105,708,140,30,Cyan,true);Label(root,"Локальное сохранение защищено",15,310,708,300,30,new Color(.55f,1,.7f));
-    PageButton(root,"ПОДДЕРЖКА",LobbyAction.Support,770,accent:Cyan);PageButton(root,"ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ",LobbyAction.Privacy,828,accent:new Color(.25f,.55f,1));break;
+    BuildSettingsPage(root);break;
    case "Уровни":
     PageText(root,$"КАМПАНИЯ  ·  {completed}/100 ПРОЙДЕНО  ·  {totalStars} ЗВЁЗД",251,13,Cyan,38);
     for(int i=0;i<20;i++){int id=levelPage*20+i;if(id>=MenuData.levels.Length)continue;bool open=id<MenuUnlocked;int stars=MenuStars(id+1);var b=Button(root,"Level "+(id+1),LobbyAction.SelectLevel,91,69,115+(i%4)*103,326+(i/4)*83,null,20,open?Cyan:new Color(.2f,.25f,.38f),id);b.GetComponent<Button>().interactable=open;Text(b.transform,"Number",(id+1).ToString("00"),23,86,31,0,9,null,true);Text(b.transform,"Stars",open?(stars>0?new string('★',stars):"ОТКРЫТ"):"ЗАКРЫТ",10,86,22,0,-20,open?Gold:new Color(.35f,.44f,.6f));}
     PageButton(root,"ПРЕДЫДУЩИЕ",LobbyAction.PreviousPage,738,enabled:levelPage>0);PageButton(root,"СЛЕДУЮЩИЕ",LobbyAction.NextPage,792,enabled:levelPage<(MenuData.levels.Length-1)/20);break;
    case "Подарок":
-    PageText(root,Profile.GiftReady(Today)?"Подарок готов":"Следующий подарок через "+GiftCountdown,200,15,new Color(.72f,.86f,1),38);
-    var giftStage=At(root,"Gift platform",448,282,270,385);var giftPlate=giftStage.gameObject.AddComponent<LobbyPlate>();giftPlate.accent=Cyan;giftPlate.raycastTarget=false;
-    Neon(giftStage,NeonSymbol.Crystal,82,-132,-20,Gold);Icon(giftStage,LobbyIcon.Hero,82,0,-20,Cyan);Icon(giftStage,LobbyIcon.Shop,82,132,-20,Gold);
-    Text(giftStage,"Crystal amount","100\nКРИСТАЛЛОВ",18,125,65,-132,72,null,true);Text(giftStage,"Resonance amount","1\nИМПУЛЬС",18,125,65,0,72,null,true);Text(giftStage,"Coin amount","500\nМОНЕТ",18,125,65,132,72,null,true);
-    for(int i=0;i<7;i++){float x=82+i*63;var day=At(root,"Gift day "+(i+1),53,67,x,613);var dayPlate=day.gameObject.AddComponent<LobbyPlate>();bool done=i<Mathf.Max(0,Profile.giftStreak-1);bool current=i==Mathf.Clamp(Profile.giftStreak-1,0,6);dayPlate.accent=done?new Color(.2f,1,.55f):current?Cyan:new Color(.2f,.35f,.55f);dayPlate.raycastTarget=false;Text(day,"Day","День "+(i+1),10,53,20,0,19,new Color(.7f,.85f,1));Icon(day,done?LobbyIcon.Tasks:current?LobbyIcon.Gift:LobbyIcon.Levels,25,0,-10,done?new Color(.3f,1,.55f):current?Cyan:new Color(.45f,.58f,.75f));}
-    PageText(root,Profile.GiftReady(Today)?"Ежедневная награда без рекламы":"Сегодня уже получено · серия "+Mathf.Max(1,Profile.giftStreak)+" дней",703,14,new Color(.65f,.78f,1),34);
-    PageButton(root,Profile.GiftReady(Today)?"ЗАБРАТЬ":"УЖЕ ПОЛУЧЕНО",LobbyAction.ClaimGift,786,enabled:Profile.GiftReady(Today),accent:Cyan);break;
+    BuildGiftPage(root);break;
    case "Награда":
     shield.color=Color.clear;BuildRewardPage(root,PendingPulseReward);break;
    case "Просмотр":
@@ -108,15 +90,7 @@ public partial class PulseLobby {
   RefreshSkinScreen();
  }
  int CountSkins(){int count=0;for(int i=0;i<5;i++){if((Profile.ownedSkins&(1<<i))!=0)count++;if((Profile.ownedPortals&(1<<i))!=0)count++;}return count;}
- void SettingToggle(Transform root,string title,LobbyAction action,float y,bool active){var b=Button(root,title,action,392,48,270,y,title+"     "+(active?"ВКЛ":"ВЫКЛ"),16,active?Cyan:new Color(.28f,.38f,.55f));Icon(b.transform,active?LobbyIcon.Tasks:LobbyIcon.Close,24,160,0,active?new Color(.35f,1,.65f):new Color(.65f,.72f,.85f));}
  int MilestoneProgress(int i,bool achievement)=>achievement?(i==0?completed:totalStars):(i==0?Mathf.Max(Profile.wins,completed):i==1?completed:totalStars);
  int Reward(int i,bool achievement)=>(achievement?100:50)*(i+1);
  void ClaimMilestone(int i,bool achievement){if(i<0||i>2)return;int[] goals=achievement?new[]{1,15,30}:new[]{1,3,9};int claimed=achievement?Profile.claimedAchievements:Profile.claimedTasks;if((claimed&(1<<i))!=0||MilestoneProgress(i,achievement)<goals[i])return;Profile.crystals+=Reward(i,achievement);if(achievement)Profile.claimedAchievements|=1<<i;else Profile.claimedTasks|=1<<i;Save();PlayBonus();Toast("Награда получена!");ShowPage(achievement?"Достижения":"Задания");}
- void AddSlider(Transform root,string title,float y,float value,bool music){
-  Label(root,title,18,270,y-32,360,31);var r=At(root,title+" slider",360,45,270,y+12);var hit=r.gameObject.AddComponent<Image>();hit.color=Color.clear;
-  var track=Rect(r,"Track",360,6,0,0).gameObject.AddComponent<Image>();track.color=new Color(.16f,.24f,.41f);track.raycastTarget=false;
-  var fillArea=Rect(r,"Fill area",360,6,0,0);var fill=Rect(fillArea,"Fill",0,0,0,0).gameObject.AddComponent<Image>();fill.color=Cyan;fill.raycastTarget=false;fill.rectTransform.anchorMin=Vector2.zero;fill.rectTransform.anchorMax=Vector2.one;
-  var handleArea=Rect(r,"Handle area",360,25,0,0);var handle=Rect(handleArea,"Handle",20,0,0,0).gameObject.AddComponent<Image>();handle.color=White;handle.rectTransform.anchorMin=new Vector2(.5f,0);handle.rectTransform.anchorMax=new Vector2(.5f,1);
-  var slider=r.gameObject.AddComponent<Slider>();slider.direction=Slider.Direction.LeftToRight;slider.fillRect=fill.rectTransform;slider.handleRect=handle.rectTransform;slider.targetGraphic=handle;slider.minValue=0;slider.maxValue=1;slider.SetValueWithoutNotify(value);slider.onValueChanged.AddListener(v=>{if(music)Profile.music=v;else Profile.sound=v;Save();});
- }
 }

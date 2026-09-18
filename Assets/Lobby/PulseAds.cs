@@ -6,7 +6,7 @@ using YandexMobileAds;
 using YandexMobileAds.Base;
 
 // One SDK owner across scenes. Editor never requests or simulates paid impressions.
-public sealed class PulseAds : MonoBehaviour {
+public sealed partial class PulseAds : MonoBehaviour {
  public static PulseAds Instance {get;private set;}
  public static bool Fullscreen=>Instance&&Instance.showing;
  public static float BottomInsetPixels=>Instance&&Instance.dockVisible?Instance.bannerPixels+12*Instance.density:0;
@@ -37,6 +37,7 @@ public sealed class PulseAds : MonoBehaviour {
   LayoutBannerDock();
   // Preload only when a reward screen is likely to be used. Never loop on no-fill.
   if(home&&menu.Page=="Награда"||play&&game.VictoryRewardAvailable)PrepareReward();
+  if(play&&game.InterstitialEligible)PrepareInterstitial();
  }
  void MeasureBannerSlot(){
   if(measuredWidth==Screen.width&&measuredHeight==Screen.height&&measuredSafe==Screen.safeArea)return;
@@ -88,7 +89,7 @@ public sealed class PulseAds : MonoBehaviour {
  }
  void Finish(RewardedAd ad){if(!showing||rewarded!=ad)return;var callback=finished;bool success=earned;showing=false;grant=null;finished=null;rewarded=null;ad.Destroy();AudioListener.pause=mutedBefore;nextLoad=Time.unscaledTime+2;callback?.Invoke(success);}
  void OnApplicationPause(bool paused){foreground=!paused;if(paused)SetBannerVisible(false);}
- void OnDestroy(){if(Instance!=this)return;SceneManager.sceneLoaded-=SceneLoaded;banner?.Destroy();loader?.CancelLoading();rewarded?.Destroy();if(showing)AudioListener.pause=mutedBefore;Instance=null;}
+ void OnDestroy(){if(Instance!=this)return;SceneManager.sceneLoaded-=SceneLoaded;banner?.Destroy();loader?.CancelLoading();rewarded?.Destroy();DisposeInterstitial();if(showing)AudioListener.pause=mutedBefore;Instance=null;}
 }
 
 // Decoration only: no labels, fake ad controls, masks or input interception.

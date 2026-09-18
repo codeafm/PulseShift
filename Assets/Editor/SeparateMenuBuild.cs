@@ -12,8 +12,9 @@ public static class SeparateMenuBuild {
  public const string MenuPath="Assets/Scenes/PULSESHIFT_Menu.unity";
  public const string GamePath="Assets/Scenes/PULSESHIFT_Game.unity";
  public static void ConfigureBuildOrder(){
-  var other=EditorBuildSettings.scenes.Where(s=>s.path!=MenuPath&&s.path!=GamePath&&s.path!=IntegratedBuild.ScenePath).ToList();
-  other.Insert(0,new EditorBuildSettingsScene(GamePath,true));other.Insert(0,new EditorBuildSettingsScene(MenuPath,true));EditorBuildSettings.scenes=other.ToArray();
+  var splash=SplashSceneBuild.SplashPath;
+  var other=EditorBuildSettings.scenes.Where(s=>s.path!=splash&&s.path!=MenuPath&&s.path!=GamePath&&s.path!=IntegratedBuild.ScenePath).ToList();
+  other.Insert(0,new EditorBuildSettingsScene(GamePath,true));other.Insert(0,new EditorBuildSettingsScene(MenuPath,true));other.Insert(0,new EditorBuildSettingsScene(splash,true));EditorBuildSettings.scenes=other.ToArray();
  }
  [MenuItem("PULSESHIFT/Open MAIN MENU scene")]
  public static void OpenMenu(){Open(MenuPath,true);}
@@ -44,7 +45,7 @@ public static class SeparateMenuBuild {
  public static void BuildExisting(){
   if(!Application.isBatchMode&&!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())return;
   Verify();ConfigureBuildOrder();PlayerSettings.bundleVersion="1.3.7";PlayerSettings.Android.bundleVersionCode=11;
-  var scenes=System.Environment.GetCommandLineArgs().Contains("-legacyVerifyScene")?new[]{MenuPath,GamePath,IntegratedBuild.ScenePath}:new[]{MenuPath,GamePath};
+  var scenes=System.Environment.GetCommandLineArgs().Contains("-legacyVerifyScene")?new[]{SplashSceneBuild.SplashPath,MenuPath,GamePath,IntegratedBuild.ScenePath}:new[]{SplashSceneBuild.SplashPath,MenuPath,GamePath};
   var result=BuildPipeline.BuildPlayer(scenes,"../BuildIntegrated/PULSESHIFT.exe",BuildTarget.StandaloneWindows64,BuildOptions.None);
   if(result.summary.result!=BuildResult.Succeeded)throw new System.Exception("Separate-scene desktop build failed");Debug.Log("SEPARATE_MENU_BUILD_OK");
  }
@@ -54,7 +55,7 @@ public static class SeparateMenuBuild {
   Verify();ConfigureBuildOrder();PlayerSettings.bundleVersion="1.3.7";PlayerSettings.Android.bundleVersionCode=11;
   PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android,ScriptingImplementation.IL2CPP);PlayerSettings.Android.targetArchitectures=AndroidArchitecture.ARM64;
   PlayerSettings.Android.optimizedFramePacing=true;
-  var result=BuildPipeline.BuildPlayer(new[]{MenuPath,GamePath},"../BuildAndroid/PULSESHIFT-Mobile.apk",BuildTarget.Android,BuildOptions.None);
+  var result=BuildPipeline.BuildPlayer(new[]{SplashSceneBuild.SplashPath,MenuPath,GamePath},"../BuildAndroid/PULSESHIFT-Mobile.apk",BuildTarget.Android,BuildOptions.None);
   if(result.summary.result!=BuildResult.Succeeded)throw new System.Exception("Separate-scene Android build failed");Debug.Log("SEPARATE_MENU_ANDROID_OK");
  }
 }

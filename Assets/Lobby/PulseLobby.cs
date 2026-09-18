@@ -89,6 +89,7 @@ public partial class PulseLobby:MonoBehaviour {
    case LobbyAction.Greet:Toast(stage.Greet());break;
    case LobbyAction.WatchReward:BeginVideoReward();break;
    case LobbyAction.ToggleVibration:Profile.vibration=!Profile.vibration;Save();ShowPage("Настройки");break;
+   case LobbyAction.ToggleJumpSound:Profile.jumpSound=!Profile.jumpSound;Save();ShowPage("Настройки");break;
    case LobbyAction.ToggleFps:if(MobilePerformance.Lite){Toast("Для плавности на этом устройстве включено 30 FPS");break;}Profile.fps60=!Profile.fps60;Save();ShowPage("Настройки");break;
    case LobbyAction.CycleQuality:Profile.quality=(Profile.quality+1)%3;Save();ShowPage("Настройки");break;
    case LobbyAction.Support:Toast("Поддержка: support@pulseshift.game");break;

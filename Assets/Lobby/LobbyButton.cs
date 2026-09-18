@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-public enum LobbyAction {None,Play,Home,Levels,Hero,Achievements,Settings,Profile,Crystals,Resonance,Gift,Events,Tasks,Shop,Collection,Stats,Skins,Campaign,Challenge,Endless,Close,ClaimGift,ClaimTask,ClaimAchievement,BuySkin,BuyPortal,SkinHeroTab,SkinPortalTab,SkinPrevious,SkinNext,SaveName,ToggleMotion,StartChallenge,StartEndless,SelectLevel,NextPage,PreviousPage,Greet,WatchReward,ToggleVibration,ToggleFps,CycleQuality,Support,Privacy,PreviewSkin}
+public enum LobbyAction {None,Play,Home,Levels,Hero,Achievements,Settings,Profile,Crystals,Resonance,Gift,Events,Tasks,Shop,Collection,Stats,Skins,Campaign,Challenge,Endless,Close,ClaimGift,ClaimTask,ClaimAchievement,BuySkin,BuyPortal,SkinHeroTab,SkinPortalTab,SkinPrevious,SkinNext,SaveName,ToggleMotion,StartChallenge,StartEndless,SelectLevel,NextPage,PreviousPage,Greet,WatchReward,ToggleVibration,ToggleFps,CycleQuality,Support,Privacy,PreviewSkin,ToggleJumpSound}
 [RequireComponent(typeof(Button))]
 public class LobbyButton:MonoBehaviour,IPointerEnterHandler,IPointerExitHandler,IPointerDownHandler,IPointerUpHandler,ICanvasRaycastFilter {
  public PulseLobby lobby;public LobbyAction action;public int value;public bool primary;

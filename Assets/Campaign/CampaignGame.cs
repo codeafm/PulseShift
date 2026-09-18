@@ -62,6 +62,7 @@ public partial class CampaignGame:MonoBehaviour {
   if(PulseAds.Fullscreen)return;
   if(useSeparateMenuScene&&PulseSceneFlow.Loading)return;
   if(LobbyOpen&&command!=CampaignUICommand.Home)return;
+  if(TryResultInterstitial(command,value))return;
   switch(command){
    case CampaignUICommand.Home:if(!busy||paused){if(busy){if(activeTurn!=null)StopCoroutine(activeTurn);activeTurn=null;busy=false;if(history.Count>0)history.Pop();foreach(var motion in liveBoard.GetComponentsInChildren<ReferenceMotion>(true))motion.ResetPose();SyncVisuals(true);}paused=false;if(useSeparateMenuScene){PulseSceneFlow.Home();break;}lobby=PulseLobby.Ensure(this);lobby.Open();}break;
    case CampaignUICommand.Pulse:if(CanPlay)Act(new Command(ActionKind.Pulse));break;
@@ -130,6 +131,7 @@ public partial class CampaignGame:MonoBehaviour {
   SyncVisuals(true);if(cameraMode==CampaignCameraMode.AutomaticFit)FitCamera();else RefreshCameraBackdrop();
   gameCamera.ResetAspect();FitCurrentBoard();gameCamera.GetComponent<PulseCameraFeel>()?.ResetFeel();ApplyBackdropTheme();ApplyPlayerSkin();ApplyPortalSkin();
   if(!testing&&ActiveMode==LobbyMode.Campaign){PlayerPrefs.SetInt(SaveKey("Current"),level.id);PlayerPrefs.Save();}
+  if(InterstitialEligible)PulseAds.Instance?.PrepareInterstitial(true);
  }
  Vector3 Position(int index)=>islands[index].transform.position+Vector3.up*.18f*liveBoard.transform.lossyScale.y;
  void SyncVisuals(bool placeActors){
@@ -193,7 +195,7 @@ public partial class CampaignGame:MonoBehaviour {
   if(!MotionPaused)resultDelay=Mathf.Max(0,resultDelay-Time.deltaTime);
   if(Input.GetKeyDown(KeyCode.Escape))paused=!paused;
   if(busy||paused||levelMenu||showLesson||testing)return;
-  if(Input.GetKeyDown(KeyCode.Z)){Undo();return;}
+  if(Input.GetKeyDown(KeyCode.Z)){RequestUI(CampaignUICommand.Undo);return;}
   if(state.dead||Rules.Won(level,state))return;
   if(Input.GetKeyDown(KeyCode.Space))Act(new Command(ActionKind.Pulse));
   if(Input.GetKeyDown(KeyCode.W))Act(new Command(ActionKind.Wait));
@@ -235,6 +237,7 @@ public partial class CampaignGame:MonoBehaviour {
   message=result==Result.Dead?why:Rules.Won(level,state)?"Все кристаллы спасены":$"Фаза {(state.phase==0?"голубая":"янтарная")} · ритм {state.tick+1}/4";
   if(result==Result.Dead){gameCamera.GetComponent<PulseCameraFeel>()?.Kick(.85f,to);actor.Defeat();PulseEffects.Burst(liveBoard.transform,to+Vector3.up*.7f,new Color(.85f,.025f,.08f),52,1.15f);PulseEffects.Wave(liveBoard.transform,to,new Color(1,.025f,.045f),1.8f);PulseHaptics.SoftDeath(UserProfile==null||UserProfile.vibration);resultDelay=.5f;PlayEffect(deadClip);StartCoroutine(PlayGameOverSound());}
   if(result==Result.Won){gameCamera.GetComponent<PulseCameraFeel>()?.Kick(.6f,to);actor.Celebrate();PulseEffects.Burst(liveBoard.transform,to+Vector3.up*.8f,new Color(1,.66f,.055f),64,1.4f);PulseEffects.Wave(liveBoard.transform,to,new Color(.015f,.8f,1),2.5f);resultDelay=.45f;RecordVictory();RecordAdVictory();Tone(1046);}
+  if(result==Result.Dead||result==Result.Won)RecordInterstitialResult(result==Result.Won);
  }
  void Undo(){if(busy||history.Count==0)return;hintVersion++;gameCamera.GetComponent<PulseCameraFeel>()?.ResetFeel();var previous=history.Pop();state=previous.state;turns=previous.turns;paused=false;resultDelay=0;foreach(var i in islands)i.transform.Find("Reference visual").localPosition=Vector3.zero;foreach(var m in liveBoard.GetComponentsInChildren<ReferenceMotion>(true))m.ResetPose();SyncVisuals(true);message="Ход отменён";}
  void RecordVictory(){if(useSeparateMenuScene)PulseSceneFlow.RecordVictory(level.id,turns,EarnedStars);if(testing){if(!useSeparateMenuScene&&Environment.GetCommandLineArgs().Contains("-lobbyVerify"))lobby?.RecordVictory(level.id,turns,EarnedStars);return;}if(!useSeparateMenuScene)lobby?.RecordVictory(level.id,turns,EarnedStars);if(ActiveMode!=LobbyMode.Campaign)return;int priorUnlocked=unlocked;unlocked=Mathf.Max(unlocked,Mathf.Min(Data.levels.Length,level.id+1));if(unlocked>priorUnlocked)PlayEffect(bonusClip);int stars=turns<=level.optimalTurns&&!hintUsed?3:turns<=level.optimalTurns+3?2:1;PlayerPrefs.SetInt(SaveKey("Unlocked"),unlocked);PlayerPrefs.SetInt(SaveKey("Stars."+level.id),Mathf.Max(stars,PlayerPrefs.GetInt(SaveKey("Stars."+level.id),0)));PlayerPrefs.Save();}
@@ -245,7 +248,7 @@ public partial class CampaignGame:MonoBehaviour {
   music=gameObject.AddComponent<AudioSource>();music.loop=true;music.playOnAwake=false;gameMusicClip=Resources.Load<AudioClip>("Audio/GameMusic");jumpClip=Resources.Load<AudioClip>("Audio/Jump");collectClip=Resources.Load<AudioClip>("Audio/CollectDiamond");deadClip=Resources.Load<AudioClip>("Audio/ModelDead");gameOverClip=Resources.Load<AudioClip>("Audio/GameOver");bonusClip=Resources.Load<AudioClip>("Audio/Bonus");music.clip=gameMusicClip;ApplyAudioSettings();if(!testing&&gameMusicClip)music.Play();
  }
  public void ApplyAudioSettings(){float background=UserProfile!=null?UserProfile.music:.3f;if(music)music.volume=background;}
- void PlayEffect(AudioClip clip){if(!clip||testing||!sound)return;sound.PlayOneShot(clip,UserProfile!=null?UserProfile.sound:1);}
+ void PlayEffect(AudioClip clip){if(!clip||testing||!sound||clip==jumpClip&&UserProfile!=null&&!UserProfile.jumpSound)return;sound.PlayOneShot(clip,UserProfile!=null?UserProfile.sound:1);}
  IEnumerator PlayGameOverSound(){yield return new WaitForSecondsRealtime(.55f);PlayEffect(gameOverClip);}
  public void RefreshPresentationHuds(){presentationHuds=FindObjectsByType<CampaignHUD>(FindObjectsInactive.Include,FindObjectsSortMode.InstanceID).Where(h=>h.gameObject.scene==gameObject.scene).ToArray();}
  bool? performanceMenuVisible;
